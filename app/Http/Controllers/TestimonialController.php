@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Testimonial\TestimonialStoreRequest;
+use App\Models\Testimonial;
 use Illuminate\Http\Request;
+
 
 class TestimonialController extends Controller
 {
@@ -11,7 +14,7 @@ class TestimonialController extends Controller
      */
     public function index()
     {
-        //
+        echo "I went cool";
     }
 
     /**
@@ -19,15 +22,34 @@ class TestimonialController extends Controller
      */
     public function create()
     {
-        //
+        return view('testimonial.create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(TestimonialStoreRequest $request)
     {
-        //
+        
+        $validated = $request->validated();
+        $file = $request->file('img');
+        $filename = date('YmdHi').$file->getClientOriginalName();
+        $file->move(public_path('uploads'), $filename);
+
+        $testimonial = new Testimonial();
+        $testimonial->img = $filename;
+        $testimonial->name = $validated['name'];
+        $testimonial->description = $validated['description'];
+        $testimonial->profession = $validated['profession'];
+
+        $insert    = $testimonial->save();
+
+        if($insert){
+            session()->flash('status', 'testimonial-created');
+            return redirect()->route('testimonial.index');
+        }
+        return abort(500);
+        
     }
 
     /**
